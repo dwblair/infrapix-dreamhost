@@ -33,7 +33,7 @@ import gc
 UPLOAD_FOLDER = os.path.join(app.root_path, 'uploads')
 NDVI_FOLDER = os.path.join(app.root_path, 'ndvi')
 
-ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif','PNG','JPEG'])
+ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif','PNG','JPEG','JPG'])
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['NDVI_FOLDER'] = NDVI_FOLDER
