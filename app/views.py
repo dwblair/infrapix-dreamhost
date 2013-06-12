@@ -37,9 +37,11 @@ ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif','PNG','JPEG','JPG'])
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['NDVI_FOLDER'] = NDVI_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+app.config['MAX_CONTENT_LENGTH'] = 16*1024*1024
 
-
+#@app.errorhandler(413)
+#def file_to_big(e):
+#    return render_template('tooBig.html')
 
 @app.route('/favicon.ico')
 def favicon():
@@ -169,6 +171,10 @@ def upload_file():
 			nir(uploadFilePath,nirFilePath)
 			return redirect(url_for('uploaded_file',filename=filename)) 
 	return render_template('index.html')
+
+@app.route('/dragdrop')
+def dragdrop():
+    return render_template('dragdrop.html')
 
 @app.route('/uploads/<filename>')
 def send_file(filename):
