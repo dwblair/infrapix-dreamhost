@@ -189,6 +189,16 @@ def uploaded_file(filename):
     ndviFilePath=os.path.join(app.config['NDVI_FOLDER'],filename)  
     return render_template('render.html',filename='/uploads/'+filename, ndviFilename='/uploads/'+'ndvi_'+filename, nirFilename='/uploads/'+'nir_'+filename)
 
+# testing connection between Flask and jquery functions ...
+@app.route('/jqueryTest')
+def jqueryTest():
+    return render_template('jqueryTest.html')
 
+@app.route('/_add_numbers')
+def add_numbers():
+    """Add two numbers server side, ridiculous but well..."""
+    a = request.args.get('a', 0, type=int)
+    b = request.args.get('b', 0, type=int)
+    return jsonify(result=a + b)
 
 
