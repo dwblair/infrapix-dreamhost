@@ -201,4 +201,9 @@ def add_numbers():
     b = request.args.get('b', 0, type=int)
     return jsonify(result=a + b)
 
+# testing clicking somewhere on an image
+@app.route('/clickTest')
+def clickTest():
+    return render_template('clickcoord.html')
+
 
