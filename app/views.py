@@ -175,8 +175,32 @@ def ndvi(imageInPath,imageOutPath):
     ax.axes.get_yaxis().set_visible(False)
     ax.patch.set_alpha(0.0)
 
+    cdict = {
+    'red'  :  ((0.00, 0.00, 0.00), 
+               (0.20, 0.00, 0.00),
+               (0.50, 0.00, .00),
+               (0.70, 1.00, 1.00),
+               (1.00, 1.00, 1.00)),
+    'green':  ((0.00, 0.00, 0.00), 
+               (0.20, 0.00, 0.00),
+               (0.50, 1.00,.50),
+               (0.70, 1.00, 1.00),
+               (1.00, 0.00, 0.00)),
+    'blue' :  ((0.00, 0.00, 0.00), 
+               (0.20, 1.00, 1.00),
+    #           (0.40, 0.00, 0.00),
+               (0.50, 1.00, 0.00),
+               (0.70, 0.00, 0.00), 
+               (1.00, 0.00, 0.00)),
+    }
+
+
+    fastie_cmap = matplotlib.colors.LinearSegmentedColormap('my_colormap',cdict,256)
+
+
     axes_img = ax.imshow(arr_ndvi,
-              cmap=plt.cm.spectral, 
+#              cmap=plt.cm.spectral, 
+              cmap=fastie_cmap,
               aspect = 'equal',
               interpolation="nearest",
               vmin=-1.0,
