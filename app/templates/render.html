@@ -6,14 +6,13 @@
 
 {% if filename %}
 	<div class="row show-grid">
-              <div class="span4"><center><h3>Original</h3></center></div>
-              <div class="span4"><center><h3>NDVI</center></h3></div>
-              <div class="span4"><center><h3>NIR</center></h3></div>
+              <div class="span4"><center><h3>Original</h3><br><img src="{{filename}}"></center></div>
+              <div class="span4"><center><h3>NDVI</h3><br><img src="{{ndviFilename}}"></center></div>
             </div>
-            <div class="row show-grid">
-              <div class="span4"><img src="{{filename}}"></div>
-              <div class="span4"><img src="{{ndviFilename}}"></div>
-              <div class="span4"><img src="{{nirFilename}}"></div>
+<br><br><br>
+<devi class="row show-grid">
+              <div class="span4"><center><h3>NIR (Red Channel)</h3><br><img src="{{nirFilename}}"></center></div>
+              <div class="span4"><center><h3>Blue Channel</h3><br><img src="{{blueFilename}}"></center></div>
             </div>
 <br>
 <br>

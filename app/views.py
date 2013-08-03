@@ -92,6 +92,52 @@ def nir(imageInPath,imageOutPath):
     plt.close()
     gc.collect()
 
+def only_blue(imageInPath,imageOutPath):
+    img=Image.open(imageInPath)
+    imgR, imgG, imgB = img.split() #get channels
+    arrB = numpy.asarray(imgB).astype('float64')
+
+    arr_only_blue=arrB
+
+    img_w,img_h=img.size
+
+    dpi=600. #need this to be floating point!
+    fig_w=img_w/dpi
+    fig_h=img_h/dpi
+
+    fig=plt.figure(figsize=(fig_w,fig_h),dpi=dpi)
+
+    fig.set_frameon(False)
+
+    ax_rect = [0.0, #left
+           0.0, #bottom
+           1.0, #width
+           1.0] #height
+    ax = fig.add_axes(ax_rect)
+    ax.yaxis.set_ticklabels([])
+    ax.xaxis.set_ticklabels([])   
+    ax.set_axis_off()
+    ax.axes.get_yaxis().set_visible(False)
+    ax.patch.set_alpha(0.0)
+
+    axes_img = ax.imshow(arr_only_blue,
+              cmap=plt.cm.gist_gray,
+              aspect = 'equal',
+              interpolation="nearest"
+             )
+
+    fig.savefig(imageOutPath, 
+            dpi=dpi,
+            bbox_inches='tight',
+            pad_inches=0.0, 
+           )
+
+    #plt.show()  #show the plot after saving
+    fig.clf()
+    plt.close()
+    gc.collect()
+
+
 
 
 def ndvi(imageInPath,imageOutPath):
@@ -169,8 +215,10 @@ def upload_file():
             file.save(uploadFilePath)
             ndviFilePath=os.path.join(app.config['UPLOAD_FOLDER'],'ndvi_'+filename)
             nirFilePath=os.path.join(app.config['UPLOAD_FOLDER'],'nir_'+filename)
+            blueFilePath=os.path.join(app.config['UPLOAD_FOLDER'],'blue_'+filename)
             ndvi(uploadFilePath,ndviFilePath)
             nir(uploadFilePath,nirFilePath)
+            only_blue(uploadFilePath,blueFilePath)
             return redirect(url_for('uploaded_file',filename=filename)) 
     return render_template('index.html')
 
@@ -187,7 +235,7 @@ def send_file(filename):
 def uploaded_file(filename):
     uploadFilePath=os.path.join(app.config['UPLOAD_FOLDER'],filename)
     ndviFilePath=os.path.join(app.config['NDVI_FOLDER'],filename)  
-    return render_template('render.html',filename='/uploads/'+filename, ndviFilename='/uploads/'+'ndvi_'+filename, nirFilename='/uploads/'+'nir_'+filename)
+    return render_template('render.html',filename='/uploads/'+filename, ndviFilename='/uploads/'+'ndvi_'+filename, nirFilename='/uploads/'+'nir_'+filename, blueFilename='/uploads/'+'blue_'+filename)
 
 # testing connection between Flask and jquery functions ...
 @app.route('/jqueryTest')
