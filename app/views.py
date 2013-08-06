@@ -19,6 +19,8 @@ from flask import Flask, render_template, send_from_directory, send_file, reques
 from cStringIO import StringIO
 from werkzeug import secure_filename
 
+os.environ[ 'MPLCONFIGDIR' ] = '/tmp/'
+
 import matplotlib
 matplotlib.use('Agg')
 #import numpy
@@ -38,6 +40,9 @@ ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif','PNG','JPEG','JPG'])
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['NDVI_FOLDER'] = NDVI_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16*1024*1024
+app.debug = True
+#app.static_folder = 'static'
+#app.static_url_path = ''
 
 #@app.errorhandler(413)
 #def file_to_big(e):
@@ -45,7 +50,7 @@ app.config['MAX_CONTENT_LENGTH'] = 16*1024*1024
 
 @app.route('/favicon.ico')
 def favicon():
-    return send_from_directory(os.path.join(app.root_path, 'static'), 'ico/favicon.ico')
+    return send_from_directory(os.path.join(app.root_path, 'static'), 'app/ico/favicon.ico')
 
 def nir(imageInPath,imageOutPath):
     img=Image.open(imageInPath)
