@@ -1,26 +1,41 @@
 {% extends "base.html" %}
 {% block title %} - Home{% endblock %}
 
-
 {% block content %}
 
 {% if filename %}
-	<div class="row show-grid">
-              <div class="span4"><center><h3>Original</h3><br><img src="{{filename}}"><br><br>This is your original image, without any processing.</center></div>
-              <div class="span4"><center><h3>NDVI</h3><br><img src="{{ndviFilename}}"><br><br>Your Infrapix image!  This image is created by comparing the amount of infrared and blue light for each pixel of your uploaded image: the greater the difference between the "red" and "blue" value for a given pixel, the higher the NDVI value for that pixel.  All living plants in your image should have an NDVI index above zero (see color bar legend on the right).  If this isn't the case, then more research needs to be done into your particular Infragram hardware and protocol: please feel free to post a <a href="http://publiclab.org">Research Note</a> or ask a question on the <a href="http://publiclab.org">Public Lab Google Group</a>.</center></div>
-            </div>
-<br><br><br>
+<div class="row show-grid">
 
-<devi class="row show-grid">
-              <div class="span4"><center><h3>Red Channel (NIR)</h3><br><img src="{{nirFilename}}"><br><br>This image is showing only the "red" channel from your uploaded image; and with an Infragram camera, this means that only near-infrared light (NIR) is being displayed.  Healthy foliage should appear strangely bright in this image, because infrared light is reflected strongly by growing leaves.</center></div>
-              <div class="span4"><center><h3>Blue Channel</h3><br><img src="{{blueFilename}}"><br><br>The image from the blue channel should look like a normal black and white photo. For some digital cameras that have had their infrared-blocking filters removed, near infrared light can "leak" into the green and blue channels, so that vegetation will look as bright in the NIR / red channel as in the blue channel; this effect will throw off the NDVI calculation above, and is an indication that the camera being tested is unlikely to be capable of generating good Infragram images.</center></div>
-            </div>
-<br>
-<br>
-(To upload another image, click <a href="/">here</a>.)
-<br>
-<br>
-         
+  <div class="span3">
+    <h3>Original</h3>
+    <p><a href="{{filename}}"><img src="{{filename}}"></a></p>
+    <p>This is your original image, without any processing.</p>
+  </div>
+
+  <div class="span3">
+    <h3>NDVI</h3>
+    <p><a href="{{ndviFilename}}"><img src="{{ndviFilename}}"></a></p>
+    <p>Your Infrapix image!  This image is created by comparing the amount of infrared and blue light for each pixel of your uploaded image: the greater the difference between the "red" and "blue" value for a given pixel, the higher the NDVI value for that pixel.  All living plants in your image should have an NDVI index above zero (see color bar legend on the right).  If this isn't the case, then more research needs to be done into your particular Infragram hardware and protocol: please feel free to post a <a href="http://publiclab.org">Research Note</a> or ask a question on the <a href="http://publiclab.org">Public Lab Google Group</a>.
+  </div>
+
+  <div class="span3">
+    <h3>Red Channel (NIR)</h3>
+    <p><img src="{{nirFilename}}" /></p>
+    <p>This image is showing only the "red" channel from your uploaded image; and with an Infragram camera, this means that only near-infrared light (NIR) is being displayed.  Healthy foliage should appear strangely bright in this image, because infrared light is reflected strongly by growing leaves.</p>
+  </div>
+
+  <div class="span3">
+    <h3>Blue Channel</h3>
+    <p><a href="{{blueFilename}}"><img src="{{blueFilename}}" /></a></p>
+    <p>The image from the blue channel should look like a normal black and white photo. For some digital cameras that have had their infrared-blocking filters removed, near infrared light can "leak" into the green and blue channels, so that vegetation will look as bright in the NIR / red channel as in the blue channel; this effect will throw off the NDVI calculation above, and is an indication that the camera being tested is unlikely to be capable of generating good Infragram images.</p>
+  </div>
+
+</div>
+
+<hr />
+
+<h4><a href="/">&laquo; Return home</a> to process another image.</h4>
+
 {% else %}
 <h2>sorry, image upload failed. wrong format?</h2>
 {% endif %}
