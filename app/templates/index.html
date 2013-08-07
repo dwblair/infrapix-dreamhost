@@ -6,29 +6,31 @@
 
 <div class="well">
 
-<img src="http://i.publiclab.org/system/images/photos/000/000/264/medium/main-image-med.jpg"><br><br>
+<h3>Upload an "infrablue" image for processing</h3>
 
-<h2>Upload an "infrablue" image for processing</h2>
-
-An "infrablue" image is one in which the "red" channel of the (JPEG, PNG, GIF) image contains primarily "near-infrared" information.  Such images can be generated using many inexpensive digital cameras and webcams by removing the infrared block filter in many inexpensive digital cameras, and by then adding on a filter that selectively blocks red light (this is something the Public lab <a href="http://www.kickstarter.com/projects/publiclab/infragram-the-infrared-photography-project">Infragram platform</a> nicely accomplishes).  For more info, check out Public Lab's <a href="http://publiclab.org/wiki/near-infrared-camera">guide to near-infrared imaging</a>.
-
-<br><br>
-To upload a file for processing, please click on the "Choose File" button below.  After you've selected a file, click "Upload".
-
-<br><br>
-<form action="" method=post enctype=multipart/form-data>
-<p><input type=file name=file>
-<input type=submit value=Upload>
+<form action="" method="post" enctype="multipart/form-data">
+<p style="padding:0 10%">
+  <input type="file" name="file" />
+  <button class="btn-large btn-primary" type="submit"><i class="icon-white icon-upload"></i> Upload</button> 
+</p>
 </form>
 
+<p>An "infrablue" image is one in which the "red" channel of the (JPEG, PNG, GIF) image contains primarily "near-infrared" information.  Such images can be generated using many inexpensive digital cameras and webcams by removing the infrared block filter in many inexpensive digital cameras, and by then adding on a filter that selectively blocks red light (this is something the Public lab <a href="http://www.kickstarter.com/projects/publiclab/infragram-the-infrared-photography-project">Infragram platform</a> nicely accomplishes).  For more info, check out Public Lab's <a href="http://publiclab.org/wiki/near-infrared-camera">guide to near-infrared imaging</a>.</p>
+
 </div>
 
-<div class="well">
+<div class="row">
+  <div class="span6">
+    <h3>Example images</h3>
+    <p style="width:75%;">If you don't have your own "infrablue" image, you can use one of the example infrablue images below. (Right-click-save an image, then upload it via the above interface.)</p>
+    <a href="http://i.publiclab.org/system/images/photos/000/000/476/medium/river.jpg"><img src="http://i.publiclab.org/system/images/photos/000/000/476/medium/river.jpg" width=300></a>
+  </div>
 
-<h3>Example images</h3>
-
-If you don't have your own "infrablue" image, you can use one of the example infrablue images below. (Right-click-save an image, then upload it via the above interface.) <br><br>
-
-<a href="http://i.publiclab.org/system/images/photos/000/000/476/medium/river.jpg"><img src="http://i.publiclab.org/system/images/photos/000/000/476/medium/river.jpg" width=300></a>
+  <div class="span6">
+    <h3>How it works</h3>
+    <img src="/static/img/camera-plant.png" />
+    <p style="width:75%;"><a href="http://publiclab.org/wiki/near-infrared-camera">Learn how this technique works</a>, and help improve it, by joining <a href="http://publiclab.org">Public Lab</a>, an open community working towards affordable, open source environmental science tools for real-world problems.</p>
+  </div>
 </div>
+
 {% endblock %}
