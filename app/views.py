@@ -165,7 +165,7 @@ def ndvi(imageInPath,imageOutPath):
     fig_w=img_w/dpi
     fig_h=img_h/dpi
 
-    fig=plt.figure(figsize=(fig_w,fig_h),dpi=dpi)
+    fig=plt.figure(figsize=(fig_w,fig_h),dpi=dpi,linewidth=0.3)
 
     fig.set_frameon(False)
 
