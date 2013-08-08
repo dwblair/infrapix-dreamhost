@@ -12,6 +12,9 @@
 #You should have received a copy of the GNU General Public License
 #along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+maxwidth=500.
+maxheight=500.
+
 from app import app
 import os
 from flask import Flask, render_template, send_from_directory, send_file, request, url_for, jsonify, redirect, Request, g
@@ -216,7 +219,8 @@ def ndvi(imageInPath,imageOutPath):
     #make an axis for colorbar
     cax = fig.add_axes([0.8,0.05,0.05,0.85]) #left, bottom, width, height
     cbar = fig.colorbar(axes_img, cax=cax)  #this resizes the axis
-    cbar.ax.tick_params(labelsize=2) #this changes the font size on the axis
+    #cbar=fig.colorbar(axes_img)
+    cbar.ax.tick_params(length=1, labelsize=2) #this changes the font size on the axis
 
     fig.savefig(imageOutPath, 
             dpi=dpi,
@@ -240,14 +244,26 @@ def upload_file():
         file=request.files['file']
         if file and allowed_file(file.filename):
             filename=secure_filename(file.filename)
+            #originalUploadFilePath=os.path.join(app.config['UPLOAD_FOLDER'],"original_"+filename)
             uploadFilePath=os.path.join(app.config['UPLOAD_FOLDER'],filename)
+            #file.save(originalUploadFilePath)
             file.save(uploadFilePath)
+            img=Image.open(uploadFilePath)
+            thumbFilePath=os.path.join(app.config['UPLOAD_FOLDER'],"thumb_"+filename)
+            width,height=img.size
+            if width>maxwidth or height>maxheight:
+                ratio=min(maxwidth/width,maxheight/height)
+                new_width=ratio*width
+                new_height=ratio*height
+                size=new_width,new_height
+            img.thumbnail(size,Image.ANTIALIAS)
+            img.save(thumbFilePath)
             ndviFilePath=os.path.join(app.config['UPLOAD_FOLDER'],'ndvi_'+filename)
             nirFilePath=os.path.join(app.config['UPLOAD_FOLDER'],'nir_'+filename)
             blueFilePath=os.path.join(app.config['UPLOAD_FOLDER'],'blue_'+filename)
-            ndvi(uploadFilePath,ndviFilePath)
-            nir(uploadFilePath,nirFilePath)
-            only_blue(uploadFilePath,blueFilePath)
+            ndvi(thumbFilePath,ndviFilePath)
+            nir(thumbFilePath,nirFilePath)
+            only_blue(thumbFilePath,blueFilePath)
             return redirect(url_for('uploaded_file',filename=filename)) 
     return render_template('index.html')
 
@@ -264,7 +280,7 @@ def send_file(filename):
 def uploaded_file(filename):
     uploadFilePath=os.path.join(app.config['UPLOAD_FOLDER'],filename)
     ndviFilePath=os.path.join(app.config['NDVI_FOLDER'],filename)  
-    return render_template('render.html',filename='/uploads/'+filename, ndviFilename='/uploads/'+'ndvi_'+filename, nirFilename='/uploads/'+'nir_'+filename, blueFilename='/uploads/'+'blue_'+filename)
+    return render_template('render.html',filename='/uploads/'+'thumb_'+filename, ndviFilename='/uploads/'+'ndvi_'+filename, nirFilename='/uploads/'+'nir_'+filename, blueFilename='/uploads/'+'blue_'+filename)
 
 # testing connection between Flask and jquery functions ...
 @app.route('/jqueryTest')
