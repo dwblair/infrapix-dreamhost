@@ -19,136 +19,216 @@ from flask import Flask, render_template, send_from_directory, send_file, reques
 from cStringIO import StringIO
 from werkzeug import secure_filename
 
+os.environ[ 'MPLCONFIGDIR' ] = '/tmp/'
+
 import matplotlib
 matplotlib.use('Agg')
-from matplotlib import pyplot
 #import numpy
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 import numpy as numpy
 
 from PIL import Image
+import gc
 
-import flask_sijax
-
-#UPLOAD_FOLDER = '/home/asine/infrapix.pvos.org/app/uploads'
-#NDVI_FOLDER = '/home/asine/infrapix.pvos.org/app/ndvi'
 
 UPLOAD_FOLDER = os.path.join(app.root_path, 'uploads')
 NDVI_FOLDER = os.path.join(app.root_path, 'ndvi')
 
-
-#UPLOAD_FOLDER = '/home/asine/infrapix.pvos.org/public/uploads'
-#NDVI_FOLDER = '/home/asine/infrapix.pvos.org/public/ndvi'
-
-ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
+ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif','PNG','JPEG','JPG'])
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['NDVI_FOLDER'] = NDVI_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+app.config['MAX_CONTENT_LENGTH'] = 16*1024*1024
+app.debug = True
+app.static_folder = 'static'
+app.static_url_path = ''
 
-
-# sijax stuff
-path = os.path.join(app.root_path, 'static/js/sijax/')
-app.config['SIJAX_STATIC_PATH']= path
-app.config['SIJAX_JSON_URI']='/static/js/sijax/json2.js'
-flask_sijax.Sijax(app)
-
-
-#@app.route('/')
-#@app.route('/index')
-#def index():
-#    return "Hello, World!"
-
-# Regular flask view function - Sijax is unavailable here
-@app.route("/sijaxTest")
-def hello():
-    return "Hello World!<br /><a href='/sijax'>Go to Sijax test</a>"
-
-# Sijax enabled function - notice the `@Sijax.route` decorator
-# used instead of `@app.route` (above).
-@flask_sijax.route(app, "/sijax")
-def hello_sijax():
-    # Sijax handler function receiving 2 arguments from the browser
-    # The first argument (obj_response) is passed automatically
-    # by Sijax (much like Python passes `self` to object methods)
-    def hello_handler(obj_response, hello_from, hello_to):
-        obj_response.alert('Hello from %s to %s' % (hello_from, hello_to))
-        obj_response.css('a', 'color', 'green')
-
-    # Another Sijax handler function which receives no arguments
-    def goodbye_handler(obj_response):
-        obj_response.alert('Goodbye, whoever you are.')
-        obj_response.css('a', 'color', 'red')
-
-    if g.sijax.is_sijax_request:
-        # The request looks like a valid Sijax request
-        # Let's register the handlers and tell Sijax to process it
-        g.sijax.register_callback('say_hello', hello_handler)
-        g.sijax.register_callback('say_goodbye', goodbye_handler)
-        return g.sijax.process_request()
-
-    return render_template('hello.html')
-
-
-
+#@app.errorhandler(413)
+#def file_to_big(e):
+#    return render_template('tooBig.html')
 
 @app.route('/favicon.ico')
 def favicon():
-    return send_from_directory(os.path.join(app.root_path, 'static'), 'ico/favicon.ico')
-
-### generating ndvi
+    return send_from_directory(app.static_folder, request.path[1:])
 
 def nir(imageInPath,imageOutPath):
-    img = mpimg.imread(imageInPath)
-    red=img[:,:,0]
-    arrR=numpy.asarray(red).astype('float64')
-   
+    img=Image.open(imageInPath)
+    imgR, imgG, imgB = img.split() #get channels
+    arrR = numpy.asarray(imgR).astype('float64')
+
     arr_nir=arrR
 
-    fig=plt.figure()
+    img_w,img_h=img.size
+
+    dpi=600. #need this to be floating point!
+    fig_w=img_w/dpi
+    fig_h=img_h/dpi
+
+    fig=plt.figure(figsize=(fig_w,fig_h),dpi=dpi)
+
     fig.set_frameon(False)
-    ax=fig.add_subplot(111)
+
+    ax_rect = [0.0, #left
+           0.0, #bottom
+           1.0, #width
+           1.0] #height
+    ax = fig.add_axes(ax_rect)
+    ax.yaxis.set_ticklabels([])
+    ax.xaxis.set_ticklabels([])   
     ax.set_axis_off()
+    ax.axes.get_yaxis().set_visible(False)
     ax.patch.set_alpha(0.0)
 
-    nir_plot = ax.imshow(arr_nir, cmap=plt.cm.gist_gray, interpolation="nearest")
+    axes_img = ax.imshow(arr_nir,
+              cmap=plt.cm.gist_gray,
+              aspect = 'equal',
+              interpolation="nearest"
+             )
 
-    #fig.colorbar(nir_plot)
-    fig.savefig(imageOutPath)
+    fig.savefig(imageOutPath, 
+            dpi=dpi,
+            bbox_inches='tight',
+            pad_inches=0.0, 
+           )
 
- 
+    #plt.show()  #show the plot after saving
+    fig.clf()
+    plt.close()
+    gc.collect()
+
+def only_blue(imageInPath,imageOutPath):
+    img=Image.open(imageInPath)
+    imgR, imgG, imgB = img.split() #get channels
+    arrB = numpy.asarray(imgB).astype('float64')
+
+    arr_only_blue=arrB
+
+    img_w,img_h=img.size
+
+    dpi=600. #need this to be floating point!
+    fig_w=img_w/dpi
+    fig_h=img_h/dpi
+
+    fig=plt.figure(figsize=(fig_w,fig_h),dpi=dpi)
+
+    fig.set_frameon(False)
+
+    ax_rect = [0.0, #left
+           0.0, #bottom
+           1.0, #width
+           1.0] #height
+    ax = fig.add_axes(ax_rect)
+    ax.yaxis.set_ticklabels([])
+    ax.xaxis.set_ticklabels([])   
+    ax.set_axis_off()
+    ax.axes.get_yaxis().set_visible(False)
+    ax.patch.set_alpha(0.0)
+
+    axes_img = ax.imshow(arr_only_blue,
+              cmap=plt.cm.gist_gray,
+              aspect = 'equal',
+              interpolation="nearest"
+             )
+
+    fig.savefig(imageOutPath, 
+            dpi=dpi,
+            bbox_inches='tight',
+            pad_inches=0.0, 
+           )
+
+    #plt.show()  #show the plot after saving
+    fig.clf()
+    plt.close()
+    gc.collect()
+
+
+
+
 def ndvi(imageInPath,imageOutPath):
-	img=Image.open(imageInPath)
-	imgR, imgG, imgB = img.split() #get channels
-	arrR = numpy.asarray(imgR).astype('float64')
-	arrB = numpy.asarray(imgB).astype('float64')
-	"""img = mpimg.imread(imageInPath)
-	red=img[:,:,0]
-	green=img[:,:,1]
-	blue=img[:,:,2]
+    img=Image.open(imageInPath)
+    imgR, imgG, imgB = img.split() #get channels
+    arrR = numpy.asarray(imgR).astype('float64')
+    arrB = numpy.asarray(imgB).astype('float64')
+    
+    num=arrR - arrB
+    num=(arrR - arrB)
+    denom=(arrR + arrB)
+    arr_ndvi=num/denom
 
-	arrR=np.asarray(red).astype('float64')
-	arrG=np.asarray(green).astype('float64')
-	arrB=np.asarray(blue).astype('float64')
-	"""
-	num=arrR - arrB
-	num=(arrR - arrB)
-	denom=(arrR + arrB)
-	arr_ndvi=num/denom
+    vmin=-1.
+    vmax = 1.
 
-	fig=plt.figure()
-	fig.set_frameon(False)
-	ax=fig.add_subplot(111)
-	ax.set_axis_off()
-	ax.patch.set_alpha(0.0)
+    img_w,img_h=img.size
 
-	#custom_cmap=make_cmap_gaussianHSV(bandwidth=0.01,num_segs=1024)
-	ndvi_plot = ax.imshow(arr_ndvi, cmap=plt.cm.spectral, interpolation="nearest")
-	#ndvi_plot = ax.imshow(arr_ndvi, cmap=custom_cmap, interpolation="nearest")
+    dpi=600. #need this to be floating point!
+    fig_w=img_w/dpi
+    fig_h=img_h/dpi
 
-	fig.colorbar(ndvi_plot)
-	fig.savefig(imageOutPath)
+    fig=plt.figure(figsize=(fig_w,fig_h),dpi=dpi,linewidth=0.3)
+
+    fig.set_frameon(False)
+
+    ax_rect = [0.0, #left
+           0.0, #bottom
+           1.0, #width
+           1.0] #height
+    ax = fig.add_axes(ax_rect)
+    ax.yaxis.set_ticklabels([])
+    ax.xaxis.set_ticklabels([])   
+    ax.set_axis_off()
+    ax.axes.get_yaxis().set_visible(False)
+    ax.patch.set_alpha(0.0)
+
+    cdict = {
+    'red'  :  ((0.00, 0.00, 0.00), 
+               (0.20, 0.00, 0.00),
+               (0.50, 0.00, .00),
+               (0.70, 1.00, 1.00),
+               (1.00, 1.00, 1.00)),
+    'green':  ((0.00, 0.00, 0.00), 
+               (0.20, 0.00, 0.00),
+               (0.50, 1.00,.50),
+               (0.70, 1.00, 1.00),
+               (1.00, 0.00, 0.00)),
+    'blue' :  ((0.00, 0.00, 0.00), 
+               (0.20, 1.00, 1.00),
+    #           (0.40, 0.00, 0.00),
+               (0.50, 1.00, 0.00),
+               (0.70, 0.00, 0.00), 
+               (1.00, 0.00, 0.00)),
+    }
+
+
+    fastie_cmap = matplotlib.colors.LinearSegmentedColormap('my_colormap',cdict,256)
+
+
+    axes_img = ax.imshow(arr_ndvi,
+#              cmap=plt.cm.spectral, 
+              cmap=fastie_cmap,
+              aspect = 'equal',
+              interpolation="nearest",
+              vmin=-1.0,
+              vmax=1.0
+             )
+
+    # Add colorbar 
+    #make an axis for colorbar
+    cax = fig.add_axes([0.8,0.05,0.05,0.85]) #left, bottom, width, height
+    cbar = fig.colorbar(axes_img, cax=cax)  #this resizes the axis
+    cbar.ax.tick_params(labelsize=2) #this changes the font size on the axis
+
+    fig.savefig(imageOutPath, 
+            dpi=dpi,
+            bbox_inches='tight',
+            pad_inches=0.0, 
+           )
+
+    #plt.show()  #show the plot after saving
+    fig.clf()
+    plt.close()
+    gc.collect()
+
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -158,44 +238,22 @@ def allowed_file(filename):
 def upload_file():
     if request.method=='POST':
         file=request.files['file']
-        if file: 
-            filename=file.filename
+        if file and allowed_file(file.filename):
+            filename=secure_filename(file.filename)
             uploadFilePath=os.path.join(app.config['UPLOAD_FOLDER'],filename)
             file.save(uploadFilePath)
             ndviFilePath=os.path.join(app.config['UPLOAD_FOLDER'],'ndvi_'+filename)
             nirFilePath=os.path.join(app.config['UPLOAD_FOLDER'],'nir_'+filename)
+            blueFilePath=os.path.join(app.config['UPLOAD_FOLDER'],'blue_'+filename)
             ndvi(uploadFilePath,ndviFilePath)
             nir(uploadFilePath,nirFilePath)
+            only_blue(uploadFilePath,blueFilePath)
             return redirect(url_for('uploaded_file',filename=filename)) 
-    return '''
-        <!doctype html>
-<head>
-<title>infrapix!</title>
-<link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap/css/bootstrap.css') }}" />
-<link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='css/slider.css') }}" />
-</head>
-<body class="container">
+    return render_template('index.html')
 
-
-        <img src="http://i.publiclab.org/system/images/photos/000/000/264/medium/main-image-med.jpg"><br>
-        <title>Infragram Online!</title>
-<br>
-Welcome to Public Lab's online service for generating NDVI from near-infrared pictures!</br><br>
-
-<div class="well">
-        <h2>Upload a new file</h2>
-
-To upload a file for processing, please click on the "Choose File" button below.  After you've selected a file, click "Upload".
-
-        <form action="" method=post enctype=multipart/form-data>
-          <p><input type=file name=file>
-                 <input type=submit value=Upload>
-        </form>
-</div>
-</body>
-</html>
-
-        '''
+@app.route('/dragdrop')
+def dragdrop():
+    return render_template('dragdrop.html')
 
 @app.route('/uploads/<filename>')
 def send_file(filename):
@@ -206,110 +264,23 @@ def send_file(filename):
 def uploaded_file(filename):
     uploadFilePath=os.path.join(app.config['UPLOAD_FOLDER'],filename)
     ndviFilePath=os.path.join(app.config['NDVI_FOLDER'],filename)  
-    return render_template('sliders.html',filename='/uploads/'+filename, ndviFilename='/uploads/'+'ndvi_'+filename, nirFilename='/uploads/'+'nir_'+filename)
+    return render_template('render.html',filename='/uploads/'+filename, ndviFilename='/uploads/'+'ndvi_'+filename, nirFilename='/uploads/'+'nir_'+filename, blueFilename='/uploads/'+'blue_'+filename)
 
+# testing connection between Flask and jquery functions ...
+@app.route('/jqueryTest')
+def jqueryTest():
+    return render_template('jqueryTest.html')
 
+@app.route('/_add_numbers')
+def add_numbers():
+    """Add two numbers server side, ridiculous but well..."""
+    a = request.args.get('a', 0, type=int)
+    b = request.args.get('b', 0, type=int)
+    return jsonify(result=a + b)
 
+# testing clicking somewhere on an image
+@app.route('/clickTest')
+def clickTest():
+    return render_template('clickcoord.html')
 
-###### sijax uploader ######
-
-class SijaxHandler(object):
-    """A container class for all Sijax handlers.
-
-    Grouping all Sijax handler functions in a class
-    (or a Python module) allows them all to be registered with
-    a single line of code.
-    """
-
-    @staticmethod
-    def _dump_data(obj_response, files, form_values, container_id):
-        def dump_files():
-            if 'file' not in files:
-                return 'Bad upload'
-
-            file_data = files['file']
-            file_name = file_data.filename
-            if file_name is None:
-                return 'Nothing uploaded'
-
-            file_type = file_data.content_type
-            file_size = len(file_data.read())
-            return 'Uploaded file %s (%s) - %sB' % (file_name, file_type, file_size)
-
-        html = """Form values: %s<hr />Files: %s"""
-        html = html % (str(form_values), dump_files())
-
-        obj_response.html('#%s' % container_id, html)
-
-    @staticmethod
-    def form_one_handler(obj_response, files, form_values):
-        SijaxHandler._dump_data(obj_response, files, form_values, 'formOneResponse')
-
-    @staticmethod
-    def form_two_handler(obj_response, files, form_values):
-        SijaxHandler._dump_data(obj_response, files, form_values, 'formTwoResponse')
-
-        obj_response.reset_form()
-        obj_response.html_append('#formTwoResponse', '<br />Form elements were reset!<br />Doing some more work (2 seconds)..')
-
-        # Send the data to the browser now
-        yield obj_response
-
-        from time import sleep
-        sleep(2)
-
-        obj_response.html_append('#formTwoResponse', '<br />Finished!')
-
-
-@flask_sijax.route(app, "/sijaxUploadTest")
-def index():
-    # Notice how we're doing callback registration on each request,
-    # instead of only when needed (when the request is a Sijax request).
-    # This is because `register_upload_callback` returns some javascript
-    # that prepares the form on the page.
-    form_init_js = ''
-    form_init_js += g.sijax.register_upload_callback('formOne', SijaxHandler.form_one_handler)
-    form_init_js += g.sijax.register_upload_callback('formTwo', SijaxHandler.form_two_handler)
-
-    if g.sijax.is_sijax_request:
-        # The request looks like a valid Sijax request
-        # The handlers are already registered above.. we can process the request
-        return g.sijax.process_request()
-
-    return render_template('upload.html', form_init_js=form_init_js)
-
-############# sijax comet test ################
-
-def comet_do_work_handler(obj_response, sleep_time):
-    import time
-
-    for i in range(6):
-        width = '%spx' % (i * 80)
-        obj_response.css('#progress', 'width', width)
-        obj_response.html('#progress', width)
-
-        # Yielding tells Sijax to flush the data to the browser.
-        # This only works for Streaming functions (Comet or Upload)
-        # and would not work for normal Sijax functions
-        yield obj_response
-
-        if i != 5:
-            time.sleep(sleep_time)
-
-
-@flask_sijax.route(app, "/sijaxCometTest")
-def index():
-    if g.sijax.is_sijax_request:
-        # The request looks like a valid Sijax request
-        # Let's register the handlers and tell Sijax to process it
-        g.sijax.register_comet_callback('do_work', comet_do_work_handler)
-        return g.sijax.process_request()
-
-    return render_template('comet.html')
-
-##### testing out twitter bootstrap
-
-@app.route("/slidertest")
-def index():
-    return render_template('sliders.html')
 

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script class="jsbin" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.0/jquery.min.js"></script>
+<meta charset=utf-8 />
+<title>JS Bin</title>
+<!--[if IE]>
+  <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+<style>
+  article, aside, figure, footer, header, hgroup, 
+  menu, nav, section { display: block; }
+</style>
+</head>
+<body>
+  <p>Click to see the position!</p>
+  <div class="box" style="width: 200px; height: 200px; background: #F00">&nbsp;</div>
+  <p id="position"></p>
+<script>
+$(document).ready(function() {
+  $('.box').click(function(e) {
+    var offset = $(this).offset();
+    $('#position').text((e.clientX - offset.left) + ", " + (e.clientY - offset.top));
+  });
+});
+</script>
+
+</body>
+</html>

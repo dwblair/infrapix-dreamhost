@@ -19,3 +19,20 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+### Installation
+
+- virtualenv
+
+- venv/bin/activate
+
+- pip install flask
+
+- pip install numpy
+
+- pip install libfreetype6-dev libpng-dev
+
+- pip install matplotlib
+
+- pip install Pillow
+
