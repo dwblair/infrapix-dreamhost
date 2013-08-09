@@ -26,6 +26,8 @@ os.environ[ 'MPLCONFIGDIR' ] = '/tmp/'
 
 import matplotlib
 matplotlib.use('Agg')
+#import pylab as pl
+
 #import numpy
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
@@ -217,10 +219,10 @@ def ndvi(imageInPath,imageOutPath):
 
     # Add colorbar 
     #make an axis for colorbar
-    cax = fig.add_axes([0.8,0.05,0.05,0.85]) #left, bottom, width, height
-    cbar = fig.colorbar(axes_img, cax=cax)  #this resizes the axis
+    #cax = fig.add_axes([0.8,0.05,0.05,0.85]) #left, bottom, width, height
+    #cbar = fig.colorbar(axes_img, cax=cax)  #this resizes the axis
     #cbar=fig.colorbar(axes_img)
-    cbar.ax.tick_params(length=1, labelsize=2) #this changes the font size on the axis
+    #cbar.ax.tick_params(length=1, labelsize=2) #this changes the font size on the axis
 
     fig.savefig(imageOutPath, 
             dpi=dpi,
@@ -230,8 +232,60 @@ def ndvi(imageInPath,imageOutPath):
 
     #plt.show()  #show the plot after saving
     fig.clf()
+    
+    fastie_cmap = matplotlib.colors.LinearSegmentedColormap('my_colormap',cdict,256)
+    
+    a = numpy.array([[0,1]])
+    plt.figure(figsize=(9, 1.5))
+    img = plt.imshow(a, cmap=fastie_cmap)
+    plt.gca().set_visible(False)
+    cax = plt.axes([0.1, 0.2, 0.8, 0.6])
+    plt.colorbar(orientation="h", cax=cax)
+    colorbarFilepath=os.path.join(app.config['UPLOAD_FOLDER'],'colorbar.png')
+    plt.savefig(colorbarFilepath)
+
+
+    img=Image.open(colorbarFilepath)
+    colorthumbFilePath=os.path.join(app.config['UPLOAD_FOLDER'],"colorbar_thumb.png")
+    width,height=img.size
+    new_width=maxwidth*.8
+    ratio=new_width/width
+    new_height=ratio*height
+    colorbar_size=new_width,new_height
+    img.thumbnail(colorbar_size,Image.ANTIALIAS)
+    img.save(colorthumbFilePath)
+
+    infragramLogoFilepath=os.path.join(app.config['UPLOAD_FOLDER'],"infragram-mini-leaf.png")
+    logoThumbFilePath=os.path.join(app.config['UPLOAD_FOLDER'],"infragramLogo_thumb.png")
+    img=Image.open(infragramLogoFilepath)
+    width,height=img.size
+    new_width=maxwidth*.2
+    ratio=new_width/width
+    new_height=ratio*height
+    logo_size=new_width,new_height
+    img.thumbnail(logo_size,Image.ANTIALIAS)
+    img.save(logoThumbFilePath)
+    
+    
+    new_im=Image.new('RGB',(int(colorbar_size[0]+logo_size[0]),int(max(colorbar_size[1],logo_size[1]))),(255,255,255))
+    imLogo=Image.open(logoThumbFilePath)
+    imColorbar=Image.open(colorthumbFilePath)
+    new_im.paste(imLogo,(0,0))
+    new_im.paste(imColorbar,(int(logo_size[0]),0))
+    fullBarFilepath=os.path.join(app.config['UPLOAD_FOLDER'],"fullBar.png")
+    new_im.save(fullBarFilepath)
+    
+    new_im_width,new_im_height=new_im.size
+    composite=Image.new('RGB',(img_w,img_h+new_im_height),(255,255,255))
+    mainImage=Image.open(imageOutPath)
+    composite.paste(mainImage,(0,0))
+    composite.paste(new_im,(0,img_h))
+    #compositeFilePath=os.path.join(app.config['UPLOAD_FOLDER'],"composite.png")
+    composite.save(imageOutPath)
     plt.close()
     gc.collect()
+    
+    
 
 
 def allowed_file(filename):
@@ -251,6 +305,7 @@ def upload_file():
             img=Image.open(uploadFilePath)
             thumbFilePath=os.path.join(app.config['UPLOAD_FOLDER'],"thumb_"+filename)
             width,height=img.size
+            size=width,height
             if width>maxwidth or height>maxheight:
                 ratio=min(maxwidth/width,maxheight/height)
                 new_width=ratio*width
