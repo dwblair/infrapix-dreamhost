@@ -257,7 +257,7 @@ def ndvi(imageInPath,imageOutPath):
     img.thumbnail(colorbar_size,Image.ANTIALIAS)
     img.save(colorthumbFilePath)
 
-    infragramLogoFilepath=os.path.join(app.config['UPLOAD_FOLDER'],"infragram-mini-leaf.png")
+    infragramLogoFilepath=os.path.join(app.static_folder,"img/infragram-mini-leaf.png")
     logoThumbFilePath=os.path.join(app.config['UPLOAD_FOLDER'],"infragramLogo_thumb.png")
     img=Image.open(infragramLogoFilepath)
     width,height=img.size
