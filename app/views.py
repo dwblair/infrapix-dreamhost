@@ -251,6 +251,7 @@ def upload_file():
             img=Image.open(uploadFilePath)
             thumbFilePath=os.path.join(app.config['UPLOAD_FOLDER'],"thumb_"+filename)
             width,height=img.size
+            size=width,height
             if width>maxwidth or height>maxheight:
                 ratio=min(maxwidth/width,maxheight/height)
                 new_width=ratio*width
