@@ -33,17 +33,19 @@ import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 import numpy as numpy
 
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 import gc
 
 
 UPLOAD_FOLDER = os.path.join(app.root_path, 'uploads')
 NDVI_FOLDER = os.path.join(app.root_path, 'ndvi')
+STATIC_FOLDER = os.path.join(app.root_path, 'static')
 
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif','PNG','JPEG','JPG'])
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['NDVI_FOLDER'] = NDVI_FOLDER
+app.config['STATIC_FOLDER'] = STATIC_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16*1024*1024
 app.debug = True
 app.static_folder = 'static'
@@ -235,7 +237,7 @@ def ndvi(imageInPath,imageOutPath):
     
     fastie_cmap = matplotlib.colors.LinearSegmentedColormap('my_colormap',cdict,256)
     
-    a = numpy.array([[0,1]])
+    a = numpy.array([[-1,1]])
     plt.figure(figsize=(9, 1.5))
     img = plt.imshow(a, cmap=fastie_cmap)
     plt.gca().set_visible(False)
@@ -280,6 +282,24 @@ def ndvi(imageInPath,imageOutPath):
     mainImage=Image.open(imageOutPath)
     composite.paste(mainImage,(0,0))
     composite.paste(new_im,(0,img_h))
+    
+    caption = Image.new("RGBA", (1200,90), (255,255,255))
+    draw = ImageDraw.Draw(caption)
+    fontsize=36
+    filename='test.png'
+    fontpath=os.path.join(app.static_folder,"fonts/helvnarrow.ttf")
+    font = ImageFont.truetype(fontpath, fontsize)
+    parts=imageOutPath.split("/")
+    fileName=parts[len(parts)-1]
+    txt='http://infragram.org/show/'+fileName
+    draw.text((10, 0), txt, (0,0,0), font=font)
+    img_resized=caption.resize((400,30),Image.ANTIALIAS)
+    #img_resized.save('testtext.png')
+
+    composite_w, composite_h=composite.size
+    caption_height=composite_h-15
+    caption_width=int(logo_size[0])+int(colorbar_size[0]/2)-100
+    composite.paste(img_resized,(caption_width,caption_height))
     #compositeFilePath=os.path.join(app.config['UPLOAD_FOLDER'],"composite.png")
     composite.save(imageOutPath)
     plt.close()
