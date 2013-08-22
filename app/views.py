@@ -41,8 +41,8 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['NDVI_FOLDER'] = NDVI_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16*1024*1024
 app.debug = True
-#app.static_folder = 'static'
-#app.static_url_path = ''
+app.static_folder = 'static'
+app.static_url_path = ''
 
 #@app.errorhandler(413)
 #def file_to_big(e):
@@ -50,7 +50,7 @@ app.debug = True
 
 @app.route('/favicon.ico')
 def favicon():
-    return send_from_directory(os.path.join(app.root_path, 'static'), 'app/ico/favicon.ico')
+    return send_from_directory(app.static_folder, request.path[1:])
 
 def nir(imageInPath,imageOutPath):
     img=Image.open(imageInPath)
