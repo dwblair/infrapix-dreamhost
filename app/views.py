@@ -59,6 +59,10 @@ app.static_url_path = ''
 def favicon():
     return send_from_directory(app.static_folder, request.path[1:])
 
+@app.route('/sandbox')
+def sandbox():
+    return send_from_directory('/static/sandbox', 'index.html')
+
 def nir(imageInPath,imageOutPath):
     img=Image.open(imageInPath)
     imgR, imgG, imgB = img.split() #get channels
