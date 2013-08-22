@@ -12,6 +12,9 @@
 #You should have received a copy of the GNU General Public License
 #along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+maxwidth=500.
+maxheight=500.
+
 from app import app
 import os
 from flask import Flask, render_template, send_from_directory, send_file, request, url_for, jsonify, redirect, Request, g
@@ -23,22 +26,26 @@ os.environ[ 'MPLCONFIGDIR' ] = '/tmp/'
 
 import matplotlib
 matplotlib.use('Agg')
+#import pylab as pl
+
 #import numpy
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 import numpy as numpy
 
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 import gc
 
 
 UPLOAD_FOLDER = os.path.join(app.root_path, 'uploads')
 NDVI_FOLDER = os.path.join(app.root_path, 'ndvi')
+STATIC_FOLDER = os.path.join(app.root_path, 'static')
 
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif','PNG','JPEG','JPG'])
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['NDVI_FOLDER'] = NDVI_FOLDER
+app.config['STATIC_FOLDER'] = STATIC_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16*1024*1024
 app.debug = True
 app.static_folder = 'static'
@@ -214,9 +221,10 @@ def ndvi(imageInPath,imageOutPath):
 
     # Add colorbar 
     #make an axis for colorbar
-    cax = fig.add_axes([0.8,0.05,0.05,0.85]) #left, bottom, width, height
-    cbar = fig.colorbar(axes_img, cax=cax)  #this resizes the axis
-    cbar.ax.tick_params(labelsize=2) #this changes the font size on the axis
+    #cax = fig.add_axes([0.8,0.05,0.05,0.85]) #left, bottom, width, height
+    #cbar = fig.colorbar(axes_img, cax=cax)  #this resizes the axis
+    #cbar=fig.colorbar(axes_img)
+    #cbar.ax.tick_params(length=1, labelsize=2) #this changes the font size on the axis
 
     fig.savefig(imageOutPath, 
             dpi=dpi,
@@ -226,8 +234,78 @@ def ndvi(imageInPath,imageOutPath):
 
     #plt.show()  #show the plot after saving
     fig.clf()
+    
+    fastie_cmap = matplotlib.colors.LinearSegmentedColormap('my_colormap',cdict,256)
+    
+    a = numpy.array([[-1,1]])
+    plt.figure(figsize=(9, 1.5))
+    img = plt.imshow(a, cmap=fastie_cmap)
+    plt.gca().set_visible(False)
+    cax = plt.axes([0.1, 0.2, 0.8, 0.6])
+    plt.colorbar(orientation="h", cax=cax)
+    colorbarFilepath=os.path.join(app.config['UPLOAD_FOLDER'],'colorbar.png')
+    plt.savefig(colorbarFilepath)
+
+
+    img=Image.open(colorbarFilepath)
+    colorthumbFilePath=os.path.join(app.config['UPLOAD_FOLDER'],"colorbar_thumb.png")
+    width,height=img.size
+    new_width=maxwidth*.8
+    ratio=new_width/width
+    new_height=ratio*height
+    colorbar_size=new_width,new_height
+    img.thumbnail(colorbar_size,Image.ANTIALIAS)
+    img.save(colorthumbFilePath)
+
+    infragramLogoFilepath=os.path.join(app.static_folder,"img/infragram-mini-leaf.png")
+    logoThumbFilePath=os.path.join(app.config['UPLOAD_FOLDER'],"infragramLogo_thumb.png")
+    img=Image.open(infragramLogoFilepath)
+    width,height=img.size
+    new_width=maxwidth*.2
+    ratio=new_width/width
+    new_height=ratio*height
+    logo_size=new_width,new_height
+    img.thumbnail(logo_size,Image.ANTIALIAS)
+    img.save(logoThumbFilePath)
+    
+    
+    new_im=Image.new('RGB',(int(colorbar_size[0]+logo_size[0]),int(max(colorbar_size[1],logo_size[1]))),(255,255,255))
+    imLogo=Image.open(logoThumbFilePath)
+    imColorbar=Image.open(colorthumbFilePath)
+    new_im.paste(imLogo,(0,0))
+    new_im.paste(imColorbar,(int(logo_size[0]),0))
+    fullBarFilepath=os.path.join(app.config['UPLOAD_FOLDER'],"fullBar.png")
+    new_im.save(fullBarFilepath)
+    
+    new_im_width,new_im_height=new_im.size
+    composite=Image.new('RGB',(img_w,img_h+new_im_height),(255,255,255))
+    mainImage=Image.open(imageOutPath)
+    composite.paste(mainImage,(0,0))
+    composite.paste(new_im,(0,img_h))
+    
+    caption = Image.new("RGBA", (1200,90), (255,255,255))
+    draw = ImageDraw.Draw(caption)
+    fontsize=36
+    filename='test.png'
+    fontpath=os.path.join(app.static_folder,"fonts/helvnarrow.ttf")
+    font = ImageFont.truetype(fontpath, fontsize)
+    parts=imageOutPath.split("/")
+    fileName=parts[len(parts)-1]
+    txt='http://infragram.org/show/'+fileName
+    draw.text((10, 0), txt, (0,0,0), font=font)
+    img_resized=caption.resize((400,30),Image.ANTIALIAS)
+    #img_resized.save('testtext.png')
+
+    composite_w, composite_h=composite.size
+    caption_height=composite_h-15
+    caption_width=int(logo_size[0])+int(colorbar_size[0]/2)-100
+    composite.paste(img_resized,(caption_width,caption_height))
+    #compositeFilePath=os.path.join(app.config['UPLOAD_FOLDER'],"composite.png")
+    composite.save(imageOutPath)
     plt.close()
     gc.collect()
+    
+    
 
 
 def allowed_file(filename):
@@ -240,14 +318,27 @@ def upload_file():
         file=request.files['file']
         if file and allowed_file(file.filename):
             filename=secure_filename(file.filename)
+            #originalUploadFilePath=os.path.join(app.config['UPLOAD_FOLDER'],"original_"+filename)
             uploadFilePath=os.path.join(app.config['UPLOAD_FOLDER'],filename)
+            #file.save(originalUploadFilePath)
             file.save(uploadFilePath)
+            img=Image.open(uploadFilePath)
+            thumbFilePath=os.path.join(app.config['UPLOAD_FOLDER'],"thumb_"+filename)
+            width,height=img.size
+            size=width,height
+            if width>maxwidth or height>maxheight:
+                ratio=min(maxwidth/width,maxheight/height)
+                new_width=ratio*width
+                new_height=ratio*height
+                size=new_width,new_height
+            img.thumbnail(size,Image.ANTIALIAS)
+            img.save(thumbFilePath)
             ndviFilePath=os.path.join(app.config['UPLOAD_FOLDER'],'ndvi_'+filename)
             nirFilePath=os.path.join(app.config['UPLOAD_FOLDER'],'nir_'+filename)
             blueFilePath=os.path.join(app.config['UPLOAD_FOLDER'],'blue_'+filename)
-            ndvi(uploadFilePath,ndviFilePath)
-            nir(uploadFilePath,nirFilePath)
-            only_blue(uploadFilePath,blueFilePath)
+            ndvi(thumbFilePath,ndviFilePath)
+            nir(thumbFilePath,nirFilePath)
+            only_blue(thumbFilePath,blueFilePath)
             return redirect(url_for('uploaded_file',filename=filename)) 
     return render_template('index.html')
 
@@ -264,7 +355,7 @@ def send_file(filename):
 def uploaded_file(filename):
     uploadFilePath=os.path.join(app.config['UPLOAD_FOLDER'],filename)
     ndviFilePath=os.path.join(app.config['NDVI_FOLDER'],filename)  
-    return render_template('render.html',filename='/uploads/'+filename, ndviFilename='/uploads/'+'ndvi_'+filename, nirFilename='/uploads/'+'nir_'+filename, blueFilename='/uploads/'+'blue_'+filename)
+    return render_template('render.html',filename='/uploads/'+'thumb_'+filename, ndviFilename='/uploads/'+'ndvi_'+filename, nirFilename='/uploads/'+'nir_'+filename, blueFilename='/uploads/'+'blue_'+filename)
 
 # testing connection between Flask and jquery functions ...
 @app.route('/jqueryTest')
