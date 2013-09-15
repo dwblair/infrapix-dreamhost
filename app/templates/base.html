@@ -2,81 +2,64 @@
 <html lang="en">
   <head>
     {% block head %}
-    <title>infrapics{% block title %}{% endblock %}</title>
+    <title>Infragram | by Public Lab{% block title %}{% endblock %}</title>
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="">
-    <meta name="keywords" content="">
-    <meta name="author" content="">
-    <meta charset="utf-8">
+    <meta name="description" content="Public Lab's online, open source service for generating plant health analyses from near-infrared imagery.">
 
-    <link href="http://twitter.github.com/bootstrap/assets/css/bootstrap.css" rel="stylesheet">
+    <link href="/static/css/bootstrap/css/bootstrap.css" rel="stylesheet">
     <style> body { padding-top: 60px; } </style>
-    <link href="http://twitter.github.com/bootstrap/assets/css/bootstrap-responsive.css" rel="stylesheet">
-
-    <!-- SUPPORT FOR IE6-8 OF HTML5 ELEMENTS -->
-    <!--[if lt IE 9]>
-          <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
-      <![endif]-->
-
-    <link rel="shortcut icon" href="{{ url_for('static', filename='ico/favicon.ico') }}">
-
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js">
-</script>
-<script src="js/vendor/jquery.ui.widget.js"></script>
-<script src="js/jquery.iframe-transport.js"></script>
-<script src="js/jquery.fileupload.js"></script>
-
-
+    <link href="/static/css/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
+    <link href="/static/css/application.css" rel="stylesheet">
     {% endblock %}
   </head>
 
   <body>
+  
+    <div class="container page" style="padding-top:10px;">
+      <img src="/static/img/infragram-logo.png" style="float:left;margin-right:14px;"/>
 
-    {% block navbar %}
-    <div class="navbar navbar-fixed-top">
-        <div class="navbar-inner">
-            <div class="container">
-              <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-              </a>
-              <a class="brand" href="#">infrapics</a>
-              <div class="nav-collapse">
-                <ul class="nav">
-                </ul>
-                {% block navbar_right %}
-                <ul class="nav pull-right">
-                  {% if not session.logged_in %}
-                    <li><a href="#">Login or Signup</a></li>
-                  {% else %}
-                    <li><a href="#">Logout</a></li>
-                  {% endif %}
-                </ul>
-                {% endblock %}
-              </div><!--/.nav-collapse -->
-            </div>
-          </div>
-    </div>
-    {% endblock %}
+      <br />
+      <h1><a style="color:#444;" href="/">Infragram</a> <br class="visible-phone"/><small>by <a href="http://publiclab.org">Public Lab</a></small></h1>
 
-    <div class="container page">
-        <div class="content">
+      <p>Welcome to Public Lab's online service for generating plant health analyses from near-infrared imagery!</p>
+
+      <hr>
+
+      <div class="alert">Just got your <a href="http://store.publiclab.org/products/infragram-diy-filter-pack">DIY Filter Pack</a>? We'll be having <b>virtual office hours</b> over the next few weeks to provide support as you modify cameras. Keep an eye out <a href="http://publiclab.org/wiki/mailing-lists">on the infrared discussion list</a> and check back here for updates.</div>
+
+      <p>For more information about the Infragram platform, <a href="http://publiclab.org/wiki/near-infrared-camera">read about the open source cameras we are developing</a>, or see our <a href="http://www.kickstarter.com/projects/publiclab/infragram-the-infrared-photography-project">Kickstarter</a> video. To purchase a filter kit to make your own camera, visit <a href="http://store.publiclab.org/products/infragram-diy-filter-pack">the Public Lab Store</a></p>
+
+      <div class="content">
           {% block content %}
           {% endblock %}
-        </div>
+      </div>
 
-        <hr>
 
-        {% block footer %}
-        <footer class="footer">
-            <p>prototype for Public Lab</p>
-        </footer>
-        {% endblock %}
+      {% block footer %}
+      <footer class="footer" style="clear:both;padding-top:10px;">
+          <hr>
+          <h4 style="margin-bottom:40px;"><a style="color:#444;" href="/">Infragram</a> <small>by <a href="http://publiclab.org">Public Lab</a> | This web app is <a href="https://github.com/Pioneer-Valley-Open-Science/infrapix-flask/">open source software</a> developed by Public Lab and <a href="http://pvos.org">Pioneer Valley Open Science</a></small></h4>
+      </footer>
+      {% endblock %}
 
     </div>
+
     {% block js_footer %}
       <script src="http://twitter.github.com/bootstrap/assets/js/bootstrap.js"></script>
     {% endblock %}
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-43030180-1', 'infragram.org');
+  ga('send', 'pageview');
+
+</script>
   </body>
+
+
 </html>
