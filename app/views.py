@@ -254,7 +254,8 @@ def ndvi(imageInPath,imageOutPath):
     img=Image.open(colorbarFilepath)
     colorthumbFilePath=os.path.join(app.config['UPLOAD_FOLDER'],"colorbar_thumb.png")
     width,height=img.size
-    new_width=maxwidth*.8
+    #new_width=maxwidth*.8
+    new_width=img_w*.8
     ratio=new_width/width
     new_height=ratio*height
     colorbar_size=new_width,new_height
@@ -265,7 +266,8 @@ def ndvi(imageInPath,imageOutPath):
     logoThumbFilePath=os.path.join(app.config['UPLOAD_FOLDER'],"infragramLogo_thumb.png")
     img=Image.open(infragramLogoFilepath)
     width,height=img.size
-    new_width=maxwidth*.2
+    #new_width=maxwidth*.2
+    new_width=img_w*.2
     ratio=new_width/width
     new_height=ratio*height
     logo_size=new_width,new_height
@@ -326,10 +328,11 @@ def upload_file():
             uploadFilePath=os.path.join(app.config['UPLOAD_FOLDER'],filename)
             #file.save(originalUploadFilePath)
             file.save(uploadFilePath)
-            img=Image.open(uploadFilePath)
-            thumbFilePath=os.path.join(app.config['UPLOAD_FOLDER'],"thumb_"+filename)
+            img=Image.open(uploadFilePath)           
             width,height=img.size
             size=width,height
+            '''
+            thumbFilePath=os.path.join(app.config['UPLOAD_FOLDER'],"thumb_"+filename)
             if width>maxwidth or height>maxheight:
                 ratio=min(maxwidth/width,maxheight/height)
                 new_width=ratio*width
@@ -337,12 +340,16 @@ def upload_file():
                 size=new_width,new_height
             img.thumbnail(size,Image.ANTIALIAS)
             img.save(thumbFilePath)
-            ndviFilePath=os.path.join(app.config['UPLOAD_FOLDER'],'ndvi_'+filename)
-            nirFilePath=os.path.join(app.config['UPLOAD_FOLDER'],'nir_'+filename)
-            blueFilePath=os.path.join(app.config['UPLOAD_FOLDER'],'blue_'+filename)
             ndvi(thumbFilePath,ndviFilePath)
             nir(thumbFilePath,nirFilePath)
             only_blue(thumbFilePath,blueFilePath)
+            '''
+            ndviFilePath=os.path.join(app.config['UPLOAD_FOLDER'],'ndvi_'+filename)
+            nirFilePath=os.path.join(app.config['UPLOAD_FOLDER'],'nir_'+filename)
+            blueFilePath=os.path.join(app.config['UPLOAD_FOLDER'],'blue_'+filename)
+            ndvi(uploadFilePath,ndviFilePath)
+            nir(uploadFilePath,nirFilePath)
+            only_blue(uploadFilePath,blueFilePath)
             return redirect(url_for('uploaded_file',filename=filename)) 
     return render_template('index.html')
 
@@ -359,7 +366,8 @@ def send_file(filename):
 def uploaded_file(filename):
     uploadFilePath=os.path.join(app.config['UPLOAD_FOLDER'],filename)
     ndviFilePath=os.path.join(app.config['NDVI_FOLDER'],filename)  
-    return render_template('render.html',filename='/uploads/'+'thumb_'+filename, ndviFilename='/uploads/'+'ndvi_'+filename, nirFilename='/uploads/'+'nir_'+filename, blueFilename='/uploads/'+'blue_'+filename)
+    #return render_template('render.html',filename='/uploads/'+'thumb_'+filename,
+    return render_template('render.html',filename='/uploads/'+filename, ndviFilename='/uploads/'+'ndvi_'+filename, nirFilename='/uploads/'+'nir_'+filename, blueFilename='/uploads/'+'blue_'+filename)
 
 # testing connection between Flask and jquery functions ...
 @app.route('/jqueryTest')
